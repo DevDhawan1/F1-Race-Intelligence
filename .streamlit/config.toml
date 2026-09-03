@@ -1,0 +1,44 @@
+[theme]
+# F1 Race Intelligence - Custom Theme
+# Based on F1 brand colors: Red (#FF1801), Dark (#15151E), Carbon (#0E0E11)
+
+# Primary brand color - F1 Red
+primaryColor = "#FF1801"
+
+# Background colors
+backgroundColor = "#0E0E11"
+secondaryBackgroundColor = "#15151E"
+
+# Text colors
+textColor = "#FFFFFF"
+font = "sans serif"  # Will use system font, can customize via CSS
+
+# Widget styling
+[widget]
+# Metrics, inputs, buttons inherit theme colors
+
+# Sidebar
+[sidebar]
+backgroundColor = "#15151E"
+
+# Server config
+[server]
+port = 8501
+headless = false
+enableCORS = false
+enableXsrfProtection = true
+
+# Browser
+[browser]
+gatherUsageStats = false
+
+# Runner
+[runner]
+magicEnabled = true
+installTracer = false
+fixMatplotlib = true
+
+# Global settings
+[global]
+# Suppress deprecation warnings for cleaner logs
+suppressDeprecationWarnings = true

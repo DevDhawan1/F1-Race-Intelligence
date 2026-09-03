@@ -1,0 +1,14 @@
+streamlit==1.60.0
+fastf1==3.8.3
+pandas==2.3.3
+numpy==2.5.1
+plotly==6.9.0
+requests==2.34.2
+requests-cache==1.3.3
+pillow==12.3.0
+python-dateutil==2.9.0.post0
+pytz==2026.3.post1
+tzdata==2026.3
+altair==6.2.2
+packaging==26.2
+toml==0.10.2
