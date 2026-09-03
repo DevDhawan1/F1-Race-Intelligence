@@ -11,20 +11,12 @@ secondaryBackgroundColor = "#15151E"
 
 # Text colors
 textColor = "#FFFFFF"
-font = "sans serif"  # Will use system font, can customize via CSS
-
-# Widget styling
-[widget]
-# Metrics, inputs, buttons inherit theme colors
-
-# Sidebar
-[sidebar]
-backgroundColor = "#15151E"
+font = "sans serif"
 
 # Server config
 [server]
 port = 8501
-headless = false
+headless = true
 enableCORS = false
 enableXsrfProtection = true
 
@@ -35,10 +27,7 @@ gatherUsageStats = false
 # Runner
 [runner]
 magicEnabled = true
-installTracer = false
-fixMatplotlib = true
 
 # Global settings
 [global]
-# Suppress deprecation warnings for cleaner logs
 suppressDeprecationWarnings = true
