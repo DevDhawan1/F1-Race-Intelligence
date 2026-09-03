@@ -10,7 +10,7 @@ A Streamlit-based Formula 1 race analytics dashboard powered by FastF1.
 - **Team Analysis** — Teammate comparison, team pace, tyre strategy, performance summary
 - **Race Overview** — Top 10 finishers, position changes, team standings, fastest laps
 
-## Quick Start
+## Quick Start (Local)
 
 ```bash
 # Clone and enter directory
@@ -28,30 +28,7 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-## Deployment
-
-### Streamlit Cloud
-1. Push to GitHub
-2. Connect repo at [share.streamlit.io](https://share.streamlit.io)
-3. Set main file: `app.py`
-4. Deploy
-
-### Docker
-```dockerfile
-FROM python:3.11-slim
-
-WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-EXPOSE 8501
-CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
-```
-
-### Environment Variables
-No secrets required — FastF1 uses public Ergast API and caches locally.
+The app will open at `http://localhost:8501`.
 
 ## Project Structure
 
@@ -70,6 +47,7 @@ No secrets required — FastF1 uses public Ergast API and caches locally.
 │   └── utils/                # Formatters, lap filters
 ├── .streamlit/config.toml    # Theme & server config
 ├── requirements.txt
+├── LICENSE
 └── README.md
 ```
 
