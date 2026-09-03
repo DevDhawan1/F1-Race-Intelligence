@@ -2,6 +2,7 @@ import html
 
 import pandas as pd
 import streamlit as st
+import fastf1.exceptions
 
 from src.ui.session_selector import session_selector
 from src.services.driver_service import get_driver_profile
@@ -1098,7 +1099,11 @@ def render_weather(session):
     st.divider()
     st.subheader(":material/wb_sunny: Session Weather")
 
-    weather = session.weather_data
+    try:
+        weather = session.weather_data
+    except fastf1.exceptions.DataNotLoadedError:
+        st.info("Weather data is not available for this session.")
+        return
 
     if weather is None or weather.empty:
         st.info("Weather data is not available for this session.")
