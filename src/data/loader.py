@@ -1,8 +1,19 @@
 import os
+import requests
 import fastf1
 import fastf1._api
 import streamlit as st
 from pathlib import Path
+
+# Patch default timeout for all HTTP requests to prevent socket hanging on Streamlit Cloud
+_original_session_request = requests.Session.request
+
+def _request_with_default_timeout(self, method, url, **kwargs):
+    if "timeout" not in kwargs or kwargs["timeout"] is None:
+        kwargs["timeout"] = (10, 60)  # 10s connect, 60s read timeout
+    return _original_session_request(self, method, url, **kwargs)
+
+requests.Session.request = _request_with_default_timeout
 
 # Set realistic User-Agent for FastF1 API calls to avoid Cloudflare/F1 API blocking on Streamlit Cloud
 fastf1._api.headers["User-Agent"] = (

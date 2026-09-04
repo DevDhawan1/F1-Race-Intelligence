@@ -1,5 +1,16 @@
 import os
+import requests
 import streamlit as st
+
+# Patch default timeout for all requests to prevent indefinite socket hanging on Streamlit Cloud
+_original_session_request = requests.Session.request
+
+def _request_with_default_timeout(self, method, url, **kwargs):
+    if "timeout" not in kwargs or kwargs["timeout"] is None:
+        kwargs["timeout"] = (10, 60)  # 10 seconds connect timeout, 60 seconds read timeout
+    return _original_session_request(self, method, url, **kwargs)
+
+requests.Session.request = _request_with_default_timeout
 
 # FastF1 cache directory (must be set before importing fastf1)
 # Use project data/cache where pre-cached files are stored
