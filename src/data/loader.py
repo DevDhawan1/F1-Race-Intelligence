@@ -1,5 +1,6 @@
 import os
 import fastf1
+import streamlit as st
 from pathlib import Path
 
 # Get the root of the project (F1-Race-Intelligence)
@@ -19,9 +20,11 @@ CACHE_DIR.mkdir(parents=True, exist_ok=True)
 fastf1.Cache.enable_cache(str(CACHE_DIR))
 
 
+@st.cache_resource(show_spinner=False)
 def load_session(year: int, grand_prix: str, session_type: str):
     """
     Load an F1 session and return the FastF1 Session object.
+    Cached in memory across reruns with Streamlit cache_resource.
     """
 
     session = fastf1.get_session(
@@ -33,4 +36,3 @@ def load_session(year: int, grand_prix: str, session_type: str):
     session.load()
 
     return session
-

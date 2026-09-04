@@ -605,10 +605,14 @@ st.html(f"""
 @st.cache_data(show_spinner=False, ttl=3600)
 def fastest_laps_overall(_session, top_n=10):
     """Get overall fastest laps across all drivers."""
-    if _session is None or _session.laps is None:
+    if _session is None:
         return pd.DataFrame()
 
-    laps = _session.laps.copy()
+    try:
+        laps = _session.laps.copy()
+    except Exception:
+        return pd.DataFrame()
+
     laps = laps[laps["LapTime"].notna()].copy()
 
     if laps.empty:

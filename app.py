@@ -2,13 +2,10 @@ import os
 import streamlit as st
 
 # FastF1 cache directory (must be set before importing fastf1)
-# Use local data/cache in development, /tmp on cloud (read-only fs)
-if os.path.exists("/mount/src"):
-    # Streamlit Cloud environment
-    os.environ.setdefault("FASTF1_CACHE", "/tmp/fastf1_cache")
-else:
-    # Local development
-    os.environ.setdefault("FASTF1_CACHE", os.path.join(os.getcwd(), "data", "cache"))
+# Use project data/cache where pre-cached files are stored
+cache_dir = os.path.join(os.getcwd(), "data", "cache")
+os.makedirs(cache_dir, exist_ok=True)
+os.environ.setdefault("FASTF1_CACHE", cache_dir)
 
 # Page Configuration
 st.set_page_config(
@@ -61,4 +58,3 @@ pg = st.navigation(
 )
 
 pg.run()
-

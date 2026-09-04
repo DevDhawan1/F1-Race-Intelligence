@@ -20,11 +20,13 @@ def _get_valid_laps(session):
     """
     Return laps with a valid lap time.
     """
-
-    if session is None or session.laps is None:
+    if session is None:
         return pd.DataFrame()
 
-    laps = session.laps.copy()
+    try:
+        laps = session.laps.copy()
+    except Exception:
+        return pd.DataFrame()
 
     if laps.empty:
         return pd.DataFrame()

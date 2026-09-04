@@ -16,8 +16,10 @@ def _get_valid_laps(session):
     """
     Return all laps with a valid lap time.
     """
-
-    laps = session.laps.copy()
+    try:
+        laps = session.laps.copy()
+    except Exception:
+        return pd.DataFrame()
 
     laps = laps[laps["LapTime"].notna()].copy()
 
