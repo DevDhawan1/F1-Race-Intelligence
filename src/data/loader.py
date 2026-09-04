@@ -1,7 +1,13 @@
 import os
 import fastf1
+import fastf1._api
 import streamlit as st
 from pathlib import Path
+
+# Set realistic User-Agent for FastF1 API calls to avoid Cloudflare/F1 API blocking on Streamlit Cloud
+fastf1._api.headers["User-Agent"] = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+)
 
 # Get the root of the project (F1-Race-Intelligence)
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
