@@ -1,5 +1,6 @@
 import os
 import requests
+import fastf1._api
 import streamlit as st
 
 # Patch default timeout for all requests to prevent indefinite socket hanging on Streamlit Cloud
@@ -11,6 +12,15 @@ def _request_with_default_timeout(self, method, url, **kwargs):
     return _original_session_request(self, method, url, **kwargs)
 
 requests.Session.request = _request_with_default_timeout
+
+# Configure full browser headers for FastF1 API calls to bypass Cloudflare/F1 CDN blocking on Streamlit Cloud
+fastf1._api.headers.update({
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    "Accept": "*/*",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Referer": "https://www.formula1.com/",
+    "Origin": "https://www.formula1.com",
+})
 
 # FastF1 cache directory (must be set before importing fastf1)
 # Use project data/cache where pre-cached files are stored

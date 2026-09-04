@@ -15,10 +15,14 @@ def _request_with_default_timeout(self, method, url, **kwargs):
 
 requests.Session.request = _request_with_default_timeout
 
-# Set realistic User-Agent for FastF1 API calls to avoid Cloudflare/F1 API blocking on Streamlit Cloud
-fastf1._api.headers["User-Agent"] = (
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
-)
+# Configure full browser headers for FastF1 API calls to bypass Cloudflare/F1 CDN blocking on Streamlit Cloud
+fastf1._api.headers.update({
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    "Accept": "*/*",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Referer": "https://www.formula1.com/",
+    "Origin": "https://www.formula1.com",
+})
 
 # Get the root of the project (F1-Race-Intelligence)
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
