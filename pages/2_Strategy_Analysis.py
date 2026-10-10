@@ -545,8 +545,8 @@ st.html("""
         </div>
 
         <div class="strategy-section-description">
-            Understand tyre usage, stint progression,
-            degradation and strategic decisions.
+            Analyze the selected driver's tyre usage, stint progression,
+            degradation, pit stops and race pace.
         </div>
 
     </div>
@@ -599,6 +599,31 @@ try:
     compounds = compound_comparison(session)
 except Exception:
     compounds = pd.DataFrame()
+
+
+# ==========================================================
+# DRIVER SELECTION
+# ==========================================================
+
+if not stints.empty and "Driver" in stints.columns:
+    strategy_drivers = sorted(stints["Driver"].dropna().astype(str).unique().tolist())
+else:
+    strategy_drivers = []
+
+if strategy_drivers:
+    selected_driver = st.selectbox(
+        "Driver for strategy analysis",
+        strategy_drivers,
+        key="strategy_driver",
+        help="Choose the driver whose tyre strategy, pit stops, degradation and race pace you want to analyze.",
+    )
+    st.caption(
+        f"Currently analyzing the race strategy of **{selected_driver}**. "
+        "The overview metrics below describe the full session."
+    )
+else:
+    selected_driver = None
+    st.info("Driver strategy data is not available for this session.")
 
 
 # ==========================================================
@@ -704,25 +729,11 @@ section_header(
 )
 
 
-# ----------------------------------------------------------
-# Select driver
-# ----------------------------------------------------------
-
-if not stints.empty:
-
-    drivers = sorted(stints["Driver"].dropna().unique().tolist())
-
-    selected_driver = st.selectbox(
-        "Driver",
-        drivers,
-        key="strategy_driver",
-    )
-
+if selected_driver is not None:
     driver_stints = stints[stints["Driver"] == selected_driver].copy()
 
 else:
 
-    selected_driver = None
     driver_stints = pd.DataFrame()
 
 
@@ -851,14 +862,9 @@ if degradation.empty:
     st.info("Tyre degradation data is not available.")
 
 else:
-
-    degradation_driver = st.selectbox(
-        "Driver",
-        sorted(degradation["Driver"].dropna().unique().tolist()),
-        key="degradation_driver",
-    )
-
-    driver_degradation = degradation[degradation["Driver"] == degradation_driver].copy()
+    driver_degradation = degradation[
+        degradation["Driver"] == selected_driver
+    ].copy()
 
     chart_data = driver_degradation[
         [
@@ -945,14 +951,7 @@ if pace.empty:
     st.info("Race pace data is not available.")
 
 else:
-
-    pace_driver = st.selectbox(
-        "Driver",
-        sorted(pace["Driver"].dropna().unique().tolist()),
-        key="pace_driver",
-    )
-
-    driver_pace = pace[pace["Driver"] == pace_driver].copy()
+    driver_pace = pace[pace["Driver"] == selected_driver].copy()
 
     chart_data = driver_pace[
         [
