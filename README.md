@@ -31,6 +31,7 @@ Open `http://localhost:8501` in a browser.
 
 ## Local-only data behavior
 
+- The session selector supports seasons from 2018 onward. Seasons before 2018 are not currently exposed by the app.
 - FastF1 downloads session data from its upstream timing sources when a session is selected.
 - Downloaded files are cached locally under `data/cache/`.
 - The cache is intentionally ignored by Git and is not deployed with this repository.
