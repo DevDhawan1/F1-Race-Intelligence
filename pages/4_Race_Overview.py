@@ -266,13 +266,13 @@ st.markdown(
 
 .section-title-row {
     display: flex;
-    align-items: baseline;
-    gap: 14px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
 }
 
 .section-kicker {
-    margin-bottom: 4px;
+    margin-bottom: 2px;
     color: #82a9d7;
     font-size: 10px;
     font-weight: 800;
@@ -282,10 +282,11 @@ st.markdown(
 
 .section-title {
     margin: 0;
-    font-size: 24px;
+    font-size: 30px;
     font-weight: 800;
     color: #ffffff;
     letter-spacing: -0.5px;
+    text-transform: uppercase;
 }
 
 .section-subtitle {
@@ -948,17 +949,43 @@ if not compound_data.empty:
     col1, col2 = st.columns([2, 1])
 
     with col1:
-        fig = px.bar(
-            compound_data,
-            x="Compound",
-            y="Average Lap Time (s)",
-            color="Compound",
-            text="Average Lap Time (s)",
-            hover_data=["Fastest Lap (s)", "Average Tyre Life", "Maximum Tyre Life", "Number of Laps", "Drivers Using Compound"],
-        )
+        compound_plot = compound_data.copy()
+        visual_baseline = float(compound_plot["Average Lap Time (s)"].min()) - 0.5
+
+        fig = go.Figure()
+        for compound, color in {
+            "HARD": "#79bff0",
+            "MEDIUM": "#0875d1",
+            "SOFT": "#f7a1a5",
+            "INTERMEDIATE": "#43b581",
+            "WET": "#2670c9",
+        }.items():
+            rows = compound_plot[compound_plot["Compound"].str.upper() == compound]
+            if rows.empty:
+                continue
+            row = rows.iloc[0]
+            fig.add_trace(
+                go.Bar(
+                    name=compound,
+                    x=[compound],
+                    y=[row["Average Lap Time (s)"] - visual_baseline],
+                    base=visual_baseline,
+                    text=[row["Average Lap Time (s)"]],
+                    texttemplate="%{text:.3f}s",
+                    textposition="outside",
+                    marker_color=color,
+                    marker_line_width=0,
+                    customdata=[[row["Average Lap Time (s)"], row["Fastest Lap (s)"]]],
+                    hovertemplate=(
+                        "Compound: %{x}<br>"
+                        "Average lap: %{customdata[0]:.3f}s<br>"
+                        "Fastest lap: %{customdata[1]:.3f}s<extra></extra>"
+                    ),
+                )
+            )
 
         fig.update_traces(
-            texttemplate="%{y:.3f}s",
+            texttemplate="%{text:.3f}s",
             textposition="outside",
             marker_line_width=0,
         )
@@ -977,7 +1004,11 @@ if not compound_data.empty:
                 title="Average Lap Time (s)",
                 gridcolor="rgba(255,255,255,0.06)",
                 zerolinecolor="rgba(255,255,255,0.1)",
-                autorange="reversed",
+                autorange=False,
+                range=[
+                    visual_baseline,
+                    float(compound_data["Average Lap Time (s)"].max()) + 0.5,
+                ],
             ),
             showlegend=False,
             margin=dict(l=60, r=20, t=20, b=60),
