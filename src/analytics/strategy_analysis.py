@@ -21,6 +21,9 @@ def _get_valid_laps(session):
     except Exception:
         return pd.DataFrame()
 
+    if not {"LapTime", "Driver"}.issubset(laps.columns):
+        return pd.DataFrame()
+
     laps = laps[laps["LapTime"].notna()].copy()
 
     laps["Lap Time (s)"] = laps["LapTime"].dt.total_seconds()
@@ -28,14 +31,21 @@ def _get_valid_laps(session):
     return laps
 
 
+def _has_columns(laps, columns):
+    return not laps.empty and set(columns).issubset(laps.columns)
+
+
 # Stint Analysis
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=3600, max_entries=32)
 def stint_analysis(_session):
     """
     Generate a summary of every race stint.
     """
 
     laps = _get_valid_laps(_session)
+
+    if not _has_columns(laps, ["Team", "Stint", "Compound", "LapNumber"]):
+        return pd.DataFrame()
 
     # Remove unrealistic lap times caused by red flags,
     # race stoppages, etc.
@@ -81,13 +91,16 @@ def stint_analysis(_session):
     return stint_df
 
 # Tyre Degradation
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=3600, max_entries=32)
 def tyre_degradation(_session):
     """
     Return lap-by-lap tyre data for degradation analysis.
     """
 
     laps = _get_valid_laps(_session)
+
+    if not _has_columns(laps, ["Team", "Stint", "Compound", "TyreLife", "LapNumber"]):
+        return pd.DataFrame()
 
     # Remove unrealistic laps (red flags etc.)
     laps = remove_outlier_laps(laps)
@@ -122,7 +135,7 @@ def tyre_degradation(_session):
 
 
 # Pit Stop Analysis
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=3600, max_entries=32)
 def pit_stop_analysis(_session):
     """
     Generate a summary of strategic pit stops during the race.
@@ -137,6 +150,9 @@ def pit_stop_analysis(_session):
     """
 
     laps = _get_valid_laps(_session)
+
+    if not _has_columns(laps, ["Team", "Stint", "Compound", "LapNumber"]):
+        return pd.DataFrame()
 
     pit_stops = []
 
@@ -192,7 +208,7 @@ def pit_stop_analysis(_session):
 
 
 # Race Pace Evolution
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=3600, max_entries=32)
 def race_pace_evolution(_session):
     """
     Return lap-by-lap race pace for all drivers.
@@ -207,6 +223,12 @@ def race_pace_evolution(_session):
     """
 
     laps = _get_valid_laps(_session)
+
+    if not _has_columns(
+        laps,
+        ["Team", "LapNumber", "Compound", "TyreLife", "Stint", "Position"],
+    ):
+        return pd.DataFrame()
 
     pace_df = laps[
         [
@@ -239,7 +261,7 @@ def race_pace_evolution(_session):
 
 
 # Compound Comparison
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=3600, max_entries=32)
 def compound_comparison(_session):
     """
     Compare the performance of each tyre compound used during the race.
@@ -254,6 +276,9 @@ def compound_comparison(_session):
     """
 
     laps = _get_valid_laps(_session)
+
+    if not _has_columns(laps, ["Compound", "TyreLife", "LapNumber"]):
+        return pd.DataFrame()
 
     # Convert lap times to seconds
     laps["Lap Time (s)"] = laps["LapTime"].dt.total_seconds()

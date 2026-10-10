@@ -1,28 +1,10 @@
 import os
-import requests
 import fastf1
-import fastf1._api
 import streamlit as st
 from pathlib import Path
+from src.services.http import configure_http
 
-# Patch default timeout for all HTTP requests to prevent socket hanging on Streamlit Cloud
-_original_session_request = requests.Session.request
-
-def _request_with_default_timeout(self, method, url, **kwargs):
-    if "timeout" not in kwargs or kwargs["timeout"] is None:
-        kwargs["timeout"] = (10, 60)  # 10s connect, 60s read timeout
-    return _original_session_request(self, method, url, **kwargs)
-
-requests.Session.request = _request_with_default_timeout
-
-# Configure full browser headers for FastF1 API calls to bypass Cloudflare/F1 CDN blocking on Streamlit Cloud
-fastf1._api.headers.update({
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-    "Accept": "*/*",
-    "Accept-Language": "en-US,en;q=0.9",
-    "Referer": "https://www.formula1.com/",
-    "Origin": "https://www.formula1.com",
-})
+configure_http()
 
 # Get the root of the project (F1-Race-Intelligence)
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -41,19 +23,23 @@ CACHE_DIR.mkdir(parents=True, exist_ok=True)
 fastf1.Cache.enable_cache(str(CACHE_DIR))
 
 
-@st.cache_resource(show_spinner=False)
+class SessionLoadError(RuntimeError):
+    """Raised when FastF1 cannot load the requested session."""
+
+
+@st.cache_resource(show_spinner=False, max_entries=32)
 def load_session(year: int, grand_prix: str, session_type: str):
     """
     Load an F1 session and return the FastF1 Session object.
     Cached in memory across reruns with Streamlit cache_resource.
     """
 
-    session = fastf1.get_session(
-        year,
-        grand_prix,
-        session_type
-    )
-
-    session.load()
+    try:
+        session = fastf1.get_session(year, grand_prix, session_type)
+        session.load()
+    except Exception as exc:
+        raise SessionLoadError(
+            f"Unable to load F1 session for {year} {grand_prix} ({session_type})."
+        ) from exc
 
     return session

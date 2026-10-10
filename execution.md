@@ -110,7 +110,12 @@ app.py
 
 ### 4_Race_Overview.py
 ```
-EMPTY - placeholder page
+1. Session Selection (expander) → session_selector()
+2. Load race metadata and results from the FastF1 session
+3. Render race header with event, weather, and session statistics
+4. Render top finishers and position changes
+5. Render team standings and pace analysis
+6. Render tyre compound, pit-stop, and fastest-lap summaries
 ```
 
 ## Data Layer
@@ -316,5 +321,5 @@ data/cache/
 ### Next Steps (Planned)
 - Migrate inline CSS to native widgets + config.toml theme
 - Replace custom HTML cards with `st.container(border=True)`
-- Implement `4_Race_Overview.py`
+- Keep `4_Race_Overview.py` aligned with the implemented race summary flow
 - Add driver/team images using native `st.image` instead of HTML

@@ -31,6 +31,9 @@ def _get_valid_laps(session):
     if laps.empty:
         return pd.DataFrame()
 
+    if not {"LapTime", "Driver"}.issubset(laps.columns):
+        return pd.DataFrame()
+
     laps = laps[laps["LapTime"].notna()].copy()
 
     laps["Lap Time (s)"] = laps["LapTime"].dt.total_seconds()
@@ -76,7 +79,7 @@ def _clean_numeric(value):
 # ==========================================================
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=3600, max_entries=32)
 def team_summary(_session):
     """
     Generate a high-level summary for every team.
@@ -201,7 +204,7 @@ def team_summary(_session):
 # ==========================================================
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=3600, max_entries=32)
 def teammate_comparison(_session, team):
     """
     Compare drivers from the selected team.
@@ -335,7 +338,7 @@ def teammate_comparison(_session, team):
 # ==========================================================
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=3600, max_entries=32)
 def team_pace_comparison(_session, team):
     """
     Return lap-by-lap pace for drivers from one team.
@@ -391,7 +394,7 @@ def team_pace_comparison(_session, team):
 # ==========================================================
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=3600, max_entries=32)
 def team_tyre_strategy(_session, team):
     """
     Return stint strategy for both drivers from a team.
@@ -459,7 +462,7 @@ def team_tyre_strategy(_session, team):
 # ==========================================================
 
 
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=3600, max_entries=32)
 def team_performance(_session, team):
     """
     Generate overall performance statistics for one team.

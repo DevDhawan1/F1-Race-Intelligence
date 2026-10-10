@@ -1,4 +1,5 @@
 import html
+import re
 import pandas as pd
 import streamlit as st
 import plotly.express as px
@@ -18,6 +19,18 @@ from src.analytics.strategy_analysis import (
 )
 from src.ui.session_selector import session_selector
 from src.utils.formatters import format_lap_time as fmt_lap_time, format_duration
+
+
+def render_table(frame):
+    """Render a safe native Streamlit table after removing legacy HTML decorations."""
+    clean = frame.copy()
+    for column in clean.columns:
+        clean[column] = clean[column].map(
+            lambda value: html.unescape(re.sub(r"<[^>]+>", "", str(value)))
+            if isinstance(value, str)
+            else value
+        )
+    st.dataframe(clean, hide_index=True, width="stretch")
 
 # ==========================================================
 # PAGE CONFIG
@@ -733,7 +746,7 @@ if "Position" in top10_display.columns and "Grid" in top10_display.columns:
 final_cols = [c for c in ["Position", "Driver", "Name", "Team", "Grid", "Pos Δ", "Pts", "Status"] if c in top10_display.columns]
 top10_display = top10_display[final_cols]
 
-st.write(top10_display.to_html(escape=False, index=False), unsafe_allow_html=True)
+render_table(top10_display)
 
 st.caption("Pos Δ = Grid Position − Finish Position (positive = gained positions)")
 
@@ -771,7 +784,7 @@ if not pos_changes.empty:
                 lambda r: f'<span class="team-color-dot" style="background:{get_team_color(r["Team"])}"></span>{html.escape(str(r["Driver"]))}',
                 axis=1
             )
-            st.write(gainers_display.to_html(escape=False, index=False), unsafe_allow_html=True)
+            render_table(gainers_display)
         else:
             st.info("No position gains")
 
@@ -790,7 +803,7 @@ if not pos_changes.empty:
                 lambda r: f'<span class="team-color-dot" style="background:{get_team_color(r["Team"])}"></span>{html.escape(str(r["Driver"]))}',
                 axis=1
             )
-            st.write(losers_display.to_html(escape=False, index=False), unsafe_allow_html=True)
+            render_table(losers_display)
         else:
             st.info("No position losses")
 
@@ -831,7 +844,7 @@ if not team_sum.empty:
         lambda t: f'<span class="team-color-dot" style="background:{get_team_color(t)}"></span>{html.escape(str(t))}'
     )
 
-    st.write(team_display.to_html(escape=False, index=False), unsafe_allow_html=True)
+    render_table(team_display)
 else:
     st.info("Team data not available")
 
@@ -909,7 +922,7 @@ if not pace_data.empty:
             hovermode="x unified",
         )
 
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
     else:
         st.info("Pace data not available for top drivers")
 else:
@@ -972,7 +985,7 @@ if not compound_data.empty:
             height=380,
         )
 
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
 
     with col2:
         comp_display = compound_data.copy()
@@ -989,7 +1002,7 @@ if not compound_data.empty:
         comp_display["Avg Life"] = comp_display["Avg Life"].round(1)
         comp_display["Max Life"] = comp_display["Max Life"].astype(int)
 
-        st.write(comp_display.to_html(escape=False, index=False), unsafe_allow_html=True)
+        render_table(comp_display)
 else:
     st.info("Tyre compound data not available")
 
@@ -1031,7 +1044,7 @@ if not pit_data.empty:
     display_cols = [c for c in ["Driver", "Team", "Stop #", "Lap", "Strategy", "Stint"] if c in pit_display.columns]
     pit_display = pit_display[display_cols]
 
-    st.write(pit_display.to_html(escape=False, index=False), unsafe_allow_html=True)
+    render_table(pit_display)
 else:
     st.info("No pit stops recorded (single-stint race or data unavailable)")
 
@@ -1072,7 +1085,7 @@ if not fastest_laps.empty:
     display_cols = [c for c in ["Driver", "Team", "Lap", "Time", "Compound", "Tyre Life", "Stint"] if c in fl_display.columns]
     fl_display = fl_display[display_cols]
 
-    st.write(fl_display.to_html(escape=False, index=False), unsafe_allow_html=True)
+    render_table(fl_display)
 else:
     st.info("Fastest laps data not available")
 

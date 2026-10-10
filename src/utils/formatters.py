@@ -63,3 +63,8 @@ def format_duration(duration):
 
 
 
+"""Backward-compatible imports for formatting helpers."""
+
+from src.utils.formatting import format_duration, format_lap_time
+
+__all__ = ["format_lap_time", "format_duration"]

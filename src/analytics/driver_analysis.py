@@ -1,5 +1,6 @@
 import pandas as pd
 import streamlit as st
+from src.utils.formatting import format_lap_time
 
 
 def _session_cache_key(session):
@@ -20,9 +21,11 @@ def _get_valid_laps(session):
     except Exception:
         return pd.DataFrame()
 
-    laps = laps[
-        laps["LapTime"].notna()
-    ].copy()
+    required = {"LapTime", "Driver"}
+    if not required.issubset(laps.columns):
+        return pd.DataFrame()
+
+    laps = laps[laps["LapTime"].notna()].copy()
 
     return laps
 
@@ -32,6 +35,9 @@ def _convert_lap_time(laps):
     Add lap time in seconds.
     """
     laps = laps.copy()
+
+    if laps.empty or "LapTime" not in laps.columns:
+        return pd.DataFrame()
 
     laps["Lap Time (s)"] = laps["LapTime"].dt.total_seconds()
 
@@ -52,7 +58,7 @@ def _convert_sector_times(laps):
 
 
 # Driver Summary
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=3600, max_entries=32)
 def driver_summary(_session):
     """
     Generate a summary of each driver's race performance.
@@ -67,8 +73,17 @@ def driver_summary(_session):
     """
 
     laps = _get_valid_laps(_session)
+    if laps.empty or "LapTime" not in laps.columns:
+        return pd.DataFrame()
     laps = _convert_lap_time(laps)
+    if laps.empty:
+        return pd.DataFrame()
 
+    if _session is None or _session.results is None or _session.results.empty:
+        return pd.DataFrame()
+    required_results = {"Abbreviation", "GridPosition", "Position"}
+    if not required_results.issubset(_session.results.columns):
+        return pd.DataFrame()
     results = _session.results.copy()
 
     summary = (
@@ -127,7 +142,7 @@ def driver_summary(_session):
 
 
 # Sector Analysis
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=3600, max_entries=32)
 def sector_analysis(_session):
     """
     Calculate average sector times for each driver.
@@ -142,6 +157,9 @@ def sector_analysis(_session):
     """
 
     laps = _get_valid_laps(_session)
+    required = {"Sector1Time", "Sector2Time", "Sector3Time", "Team"}
+    if not required.issubset(laps.columns):
+        return pd.DataFrame()
 
     laps = laps.dropna(
         subset=[
@@ -177,7 +195,7 @@ def sector_analysis(_session):
     return sector_df
 
 # Speed Analysis
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=3600, max_entries=32)
 def speed_analysis(_session):
     """
     Calculate average and maximum speed statistics for each driver.
@@ -192,6 +210,9 @@ def speed_analysis(_session):
     """
 
     laps = _get_valid_laps(_session)
+    required = {"SpeedI1", "SpeedI2", "SpeedFL", "SpeedST", "Team"}
+    if not required.issubset(laps.columns):
+        return pd.DataFrame()
 
     speed_df = (
         laps.groupby("Driver")
@@ -260,7 +281,7 @@ def driver_report(session, driver):
 
 
 # Position Changes
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=3600, max_entries=32)
 def position_changes(_session):
     """
     Calculate how many positions each driver gained or lost
@@ -276,6 +297,9 @@ def position_changes(_session):
     """
 
     summary = driver_summary(_session).copy()
+
+    if summary.empty:
+        return pd.DataFrame()
 
     summary["Positions Gained"] = (
         summary["Start Position"] -
@@ -301,7 +325,7 @@ def position_changes(_session):
 
 
 # Tyre Usage Analysis
-@st.cache_data(show_spinner=False, ttl=3600)
+@st.cache_data(show_spinner=False, ttl=3600, max_entries=32)
 def tyre_usage(_session):
     """
     Analyze tyre usage for every driver.
@@ -376,12 +400,18 @@ def driver_lap_analysis(session, driver):
 
     laps = _get_valid_laps(session)
 
+    if laps.empty or "Driver" not in laps.columns:
+        return pd.DataFrame()
+
     driver_laps = laps[laps["Driver"] == driver.upper()].copy()
 
     if driver_laps.empty:
         return pd.DataFrame()
 
     driver_laps = _convert_lap_time(driver_laps)
+
+    if "LapNumber" not in driver_laps.columns:
+        return pd.DataFrame()
 
     driver_laps = driver_laps.sort_values(by="LapNumber")
 
@@ -397,21 +427,13 @@ def driver_lap_analysis(session, driver):
     # Only keep columns that actually exist
     columns = [column for column in columns if column in driver_laps.columns]
 
+    for column in columns:
+        if column not in driver_laps.columns:
+            driver_laps[column] = pd.NA
+
     return driver_laps[columns]
 
 
-def format_lap_time(seconds):
-    """
-    Convert lap time in seconds to M:SS.mmm format.
-    """
-
-    if seconds is None:
-        return "-"
-
-    minutes = int(seconds // 60)
-    remaining_seconds = seconds % 60
-
-    return f"{minutes}:{remaining_seconds:06.3f}"
 
 
 

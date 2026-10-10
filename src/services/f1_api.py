@@ -4,7 +4,7 @@ import streamlit as st
 BASE_URL = "https://api.jolpi.ca/ergast/f1"
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, max_entries=8)
 def load_all_drivers(season: int):
     """
     Load all drivers for a particular season.
@@ -72,7 +72,7 @@ def get_high_res_headshot(url: str) -> str:
     return url.replace(".transform/1col/", ".transform/12col/")
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, max_entries=8)
 def load_driver_standings(season: int):
     """
     Load driver championship standings for a season.

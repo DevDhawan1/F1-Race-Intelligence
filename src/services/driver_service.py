@@ -7,6 +7,21 @@ from src.services.f1_api import (
 from src.services.formula1_assets import get_driver_image
 
 
+DRIVER_IMAGE_SLUGS = {
+    "COL": "colapinto01",
+}
+
+
+def driver_image_slug(driver_code, first_name=None, last_name=None):
+    """Return the known Formula1.com image slug for a driver."""
+    code = (driver_code or "").upper()
+    if code in DRIVER_IMAGE_SLUGS:
+        return DRIVER_IMAGE_SLUGS[code]
+    if not first_name or not last_name:
+        return None
+    return (first_name[:3] + last_name[:3] + "01").lower()
+
+
 def get_driver_profile(driver_code, season):
     """
     Build a complete driver profile for the UI.
@@ -29,7 +44,11 @@ def get_driver_profile(driver_code, season):
     # Formula 1 image slug
     # --------------------------------------------------
 
-    slug = (driver["first_name"][:3] + driver["last_name"][:3] + "01").lower()
+    slug = driver_image_slug(
+        driver_code,
+        driver["first_name"],
+        driver["last_name"],
+    )
 
     # --------------------------------------------------
     # Age

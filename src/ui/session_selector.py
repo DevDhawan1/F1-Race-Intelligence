@@ -4,7 +4,7 @@ from typing import Optional
 import fastf1
 import streamlit as st
 
-from src.data.loader import load_session
+from src.data.loader import SessionLoadError, load_session
 
 
 # ==========================================================
@@ -12,7 +12,7 @@ from src.data.loader import load_session
 # ==========================================================
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, max_entries=16)
 def get_schedule(year: int):
     """
     Download and cache the F1 schedule for a season.
@@ -25,18 +25,30 @@ def get_schedule(year: int):
 # ==========================================================
 
 
-def get_event_mapping(schedule):
+def get_event_mapping(schedule, today=None):
     """
     Returns
     "Spa-Francorchamps (Belgium)"
             ->
     Complete FastF1 event row
     """
+    today = today or datetime.datetime.now()
     mapping = {}
     for _, row in schedule.iterrows():
+        event_date = row.get("EventDate")
+        if event_date is not None and event_date > today:
+            continue
         display_name = f"{row['Location']} ({row['Country']})"
         mapping[display_name] = row
     return mapping
+
+
+def reset_loaded_session_on_change(config, year, circuit, session):
+    """Clear the loaded session when any selection no longer matches it."""
+    previous = (config.get("year"), config.get("circuit"), config.get("session"))
+    current = (year, circuit, session)
+    if previous != current:
+        config["loaded_session"] = None
 
 
 # ==========================================================
@@ -74,6 +86,9 @@ def session_selector() -> Optional[object]:
         config.update({"year": None, "circuit": None, "session": None, "loaded_session": None})
         return None
 
+    reset_loaded_session_on_change(
+        config, selected_year, config.get("circuit"), config.get("session")
+    )
     config["year"] = selected_year
 
     # Circuit selector
@@ -126,6 +141,9 @@ def session_selector() -> Optional[object]:
     )
 
     if selected_session:
+        reset_loaded_session_on_change(
+            config, config["year"], config["circuit"], selected_session
+        )
         config["session"] = selected_session
     else:
         config["session"] = None
@@ -142,12 +160,17 @@ def session_selector() -> Optional[object]:
     ):
         session_code = code_map[config["session"]]
         with st.spinner("Loading session data..."):
-            config["loaded_session"] = load_session(
-                config["year"],
-                event["EventName"],
-                session_code,
-            )
-        st.rerun()
+            try:
+                config["loaded_session"] = load_session(
+                    config["year"],
+                    event["EventName"],
+                    session_code,
+                )
+            except SessionLoadError as exc:
+                config["loaded_session"] = None
+                st.error(str(exc))
+            else:
+                st.rerun()
 
     # Currently Loaded Session display
     if config["loaded_session"] is not None:
