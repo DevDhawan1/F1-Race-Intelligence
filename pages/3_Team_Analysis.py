@@ -2,6 +2,7 @@ import html
 
 import pandas as pd
 import streamlit as st
+import plotly.express as px
 
 from src.analytics.driver_analysis import (
     driver_lap_analysis,
@@ -9,6 +10,21 @@ from src.analytics.driver_analysis import (
 from src.utils.formatting import format_lap_time
 from src.services.driver_service import get_driver_profile
 from src.ui.session_selector import session_selector
+from src.analytics.strategy_analysis import stint_analysis
+
+TEAM_COLORS = {
+    "Alpine": "#274a9b",
+    "Aston Martin": "#006f62",
+    "Audi": "#59616b",
+    "Cadillac": "#7d6b45",
+    "Ferrari": "#b00020",
+    "Haas F1 Team": "#59636e",
+    "McLaren": "#d97822",
+    "Mercedes": "#167b76",
+    "Racing Bulls": "#303d72",
+    "Red Bull Racing": "#182548",
+    "Williams": "#1764a5",
+}
 
 # ==========================================================
 # PAGE CONFIG
@@ -107,12 +123,14 @@ st.markdown(
 
         color: #ffffff;
 
-        font-size: 30px;
+        font-size: 38px;
         font-weight: 850;
 
-        line-height: 1.15;
+        line-height: 1.1;
 
-        margin-bottom: 9px;
+        margin-bottom: 12px;
+
+        text-transform: uppercase;
     }
 
 
@@ -831,6 +849,22 @@ selected_team = st.selectbox(
     label_visibility="collapsed",
 )
 
+team_color = TEAM_COLORS.get(selected_team, "#3c424b")
+st.html(f"""
+    <div style="
+        background: linear-gradient(110deg, color-mix(in srgb, {team_color}, black 42%), {team_color});
+        border-left: 6px solid {team_color};
+        border-radius: 14px;
+        padding: 24px 30px;
+        margin: 18px 0 28px;
+        color: white;
+    ">
+        <div style="font-size:11px;letter-spacing:3px;font-weight:800;opacity:.7;">SELECTED TEAM</div>
+        <div style="font-size:36px;font-weight:900;margin:6px 0 8px;">{html.escape(selected_team)}</div>
+        <div style="font-size:14px;opacity:.85;">Teammate performance, race pace and strategic comparison</div>
+    </div>
+    """)
+
 
 # ==========================================================
 # FIND TEAM DRIVERS
@@ -1103,6 +1137,70 @@ st.html(f"""
 
 
 # ==========================================================
+# TEAM PACE COMPARISON
+# ==========================================================
+
+pace_frames = []
+for comparison_driver in (driver_a, driver_b):
+    try:
+        driver_laps = driver_lap_analysis(session, comparison_driver)
+    except Exception:
+        driver_laps = pd.DataFrame()
+
+    if not driver_laps.empty and {"Lap Number", "Lap Time (s)"}.issubset(driver_laps.columns):
+        driver_laps = driver_laps[["Lap Number", "Lap Time (s)"]].copy()
+        driver_laps["Driver"] = comparison_driver
+        pace_frames.append(driver_laps)
+
+if pace_frames:
+    pace_comparison = pd.concat(pace_frames, ignore_index=True).dropna()
+    st.subheader("Race pace comparison")
+    pace_chart = px.line(
+        pace_comparison,
+        x="Lap Number",
+        y="Lap Time (s)",
+        color="Driver",
+        markers=False,
+        template="plotly_dark",
+    )
+    pace_chart.update_layout(
+        height=360,
+        margin=dict(l=10, r=10, t=20, b=10),
+        legend_title_text="",
+    )
+    st.plotly_chart(pace_chart, width="stretch")
+
+
+# ==========================================================
+# TYRE STRATEGY COMPARISON
+# ==========================================================
+
+try:
+    team_stints = stint_analysis(session)
+except Exception:
+    team_stints = pd.DataFrame()
+
+if not team_stints.empty and "Driver" in team_stints.columns:
+    team_stints = team_stints[
+        team_stints["Driver"].isin([driver_a, driver_b])
+    ].copy()
+
+    strategy_columns = [
+        column
+        for column in ["Driver", "Stint", "Compound", "Stint Length"]
+        if column in team_stints.columns
+    ]
+
+    if strategy_columns:
+        st.subheader("Tyre strategy comparison")
+        st.dataframe(
+            team_stints[strategy_columns],
+            width="stretch",
+            hide_index=True,
+        )
+
+
+# ==========================================================
 # TEAM SUMMARY
 # ==========================================================
 
@@ -1185,6 +1283,20 @@ best_finish_text = format_position(best_finish) if best_finish is not None else 
 pace_difference_text = (
     f"{pace_difference:.3f} s" if pace_difference is not None else "-"
 )
+
+if pace_difference is not None:
+    quicker_driver = driver_a if data_a["average_lap"] < data_b["average_lap"] else driver_b
+    team_insight = (
+        f"{selected_team} scored {combined_points_text} combined points. "
+        f"{quicker_driver} was the quicker teammate on average by {pace_difference_text}."
+    )
+else:
+    team_insight = (
+        f"{selected_team} scored {combined_points_text} combined points. "
+        "Average race pace could not be compared for this session."
+    )
+
+st.info(team_insight)
 
 
 st.html(f"""

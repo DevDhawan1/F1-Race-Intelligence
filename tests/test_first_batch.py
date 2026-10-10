@@ -20,7 +20,9 @@ class FirstBatchTests(unittest.TestCase):
     def test_driver_slug_uses_explicit_mapping_and_fallback(self):
         from src.services.driver_service import driver_image_slug
 
-        self.assertEqual(driver_image_slug("COL"), "colapinto01")
+        self.assertEqual(driver_image_slug("COL"), "fracol01")
+        self.assertEqual(driver_image_slug("HUL"), "nichul01")
+        self.assertEqual(driver_image_slug("PER"), "serper01")
         self.assertEqual(
             driver_image_slug("VER", first_name="Max", last_name="Verstappen"),
             "maxver01",

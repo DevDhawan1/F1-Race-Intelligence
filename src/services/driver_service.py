@@ -8,7 +8,9 @@ from src.services.formula1_assets import get_driver_image
 
 
 DRIVER_IMAGE_SLUGS = {
-    "COL": "colapinto01",
+    "COL": "fracol01",
+    "HUL": "nichul01",
+    "PER": "serper01",
 }
 
 

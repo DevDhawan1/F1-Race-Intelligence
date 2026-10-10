@@ -5,6 +5,12 @@ from requests import RequestException
 
 F1_DRIVERS_URL = "https://www.formula1.com/en/drivers"
 
+KNOWN_DRIVER_IMAGE_URLS = {
+    "fracol01": "https://media.formula1.com/image/upload/c_fill,w_720/q_auto/v1740000001/common/f1/2026/alpine/fracol01/2026alpinefracol01right.webp",
+    "nichul01": "https://media.formula1.com/image/upload/c_fill,w_720/q_auto/v1740000001/common/f1/2026/audi/nichul01/2026audinichul01right.webp",
+    "serper01": "https://media.formula1.com/image/upload/c_fill,w_720/q_auto/v1740000001/common/f1/2026/cadillac/serper01/2026cadillacserper01right.webp",
+}
+
 
 def parse_driver_images(html):
     """Extract driver image URLs from Formula1.com HTML."""
@@ -40,6 +46,12 @@ def load_driver_images():
 
 
 def get_driver_image(slug):
+
+    if not slug:
+        return None
+
+    if slug in KNOWN_DRIVER_IMAGE_URLS:
+        return KNOWN_DRIVER_IMAGE_URLS[slug]
 
     images = load_driver_images()
 

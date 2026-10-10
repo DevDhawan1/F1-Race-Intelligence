@@ -44,7 +44,7 @@ st.markdown(
        ====================================================== */
 
     .block-container {
-        max-width: 1450px;
+        max-width: none;
         padding-top: 2rem;
         padding-bottom: 4rem;
     }
@@ -56,29 +56,26 @@ st.markdown(
 
     .driver-page-header {
         position: relative;
+        overflow: hidden;
 
-        padding: 38px 42px;
+        padding: 28px 38px;
 
-        margin-bottom: 36px;
+        margin-top: 0;
+        margin-bottom: 28px;
 
-        border-radius: 22px;
+        border-radius: 18px;
 
         background:
-            radial-gradient(
-                circle at 85% 30%,
-                rgba(255, 70, 85, 0.18),
-                transparent 35%
-            ),
             linear-gradient(
                 110deg,
-                #09111f,
-                #111827,
-                #241018
+                #101927 0%,
+                #111a29 55%,
+                #17131e 100%
             );
 
-        border: 1px solid rgba(255,255,255,0.10);
-
-        overflow: hidden;
+        border: 1px solid #293344;
+        border-left: 5px solid #ff4054;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.18);
     }
 
 
@@ -1012,7 +1009,11 @@ if session is None:
 # DRIVER SELECTION
 # ==========================================================
 
-driver = driver_selector(session)
+driver = driver_selector(
+    session,
+    key="driver_analysis_driver",
+    shared_key="selected_driver",
+)
 
 
 if driver is None:
@@ -1031,14 +1032,6 @@ season = session.event["EventDate"].year
 profile = get_driver_profile(
     driver,
     season,
-)
-
-
-section_banner(
-    "01",
-    "DRIVER PROFILE",
-    "Driver Overview",
-    "Driver identity, team and championship information.",
 )
 
 

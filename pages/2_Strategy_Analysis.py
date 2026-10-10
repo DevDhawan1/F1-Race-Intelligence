@@ -12,6 +12,8 @@ from src.analytics.strategy_analysis import (
 )
 
 from src.ui.session_selector import session_selector
+from src.services.driver_service import get_driver_profile
+from src.ui.components.driver_card import driver_card
 
 # ==========================================================
 # PAGE CONFIG
@@ -116,14 +118,21 @@ st.markdown(
 
 
     .strategy-section-title {
-        font-size: 30px;
+        font-size: 38px;
         font-weight: 850;
 
         color: #ffffff;
 
-        line-height: 1.15;
+        text-transform: uppercase;
 
-        margin-bottom: 8px;
+        line-height: 1.1;
+
+        margin-bottom: 12px;
+    }
+
+
+    .strategy-section-title span {
+        color: #ff4655;
     }
 
 
@@ -541,7 +550,7 @@ st.html("""
         </div>
 
         <div class="strategy-section-title">
-            Strategy Analysis
+            Strategy <span>Analysis</span>
         </div>
 
         <div class="strategy-section-description">
@@ -611,16 +620,39 @@ else:
     strategy_drivers = []
 
 if strategy_drivers:
+    shared_driver = st.session_state.get("selected_driver")
+    if (
+        "strategy_driver" not in st.session_state
+        or st.session_state["strategy_driver"] not in strategy_drivers
+    ):
+        st.session_state["strategy_driver"] = (
+            shared_driver if shared_driver in strategy_drivers else strategy_drivers[0]
+        )
+
+    def sync_strategy_driver():
+        st.session_state["selected_driver"] = st.session_state["strategy_driver"]
+
     selected_driver = st.selectbox(
         "Driver for strategy analysis",
         strategy_drivers,
         key="strategy_driver",
+        on_change=sync_strategy_driver,
         help="Choose the driver whose tyre strategy, pit stops, degradation and race pace you want to analyze.",
     )
+    st.session_state["selected_driver"] = selected_driver
     st.caption(
         f"Currently analyzing the race strategy of **{selected_driver}**. "
         "The overview metrics below describe the full session."
     )
+
+    strategy_season = session.event["EventDate"].year
+    try:
+        strategy_profile = get_driver_profile(selected_driver, strategy_season)
+    except Exception:
+        strategy_profile = None
+
+    if strategy_profile:
+        driver_card(strategy_profile, show_stats=False)
 else:
     selected_driver = None
     st.info("Driver strategy data is not available for this session.")
