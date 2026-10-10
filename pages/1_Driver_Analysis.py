@@ -4,12 +4,12 @@ import streamlit as st
 
 from src.analytics.driver_analysis import (
     driver_lap_analysis,
-    format_lap_time,
     speed_analysis,
     sector_analysis,
     position_changes,
     tyre_usage,
 )
+from src.utils.formatting import format_lap_time
 
 from src.services.driver_service import (
     get_driver_profile,

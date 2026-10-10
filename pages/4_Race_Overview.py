@@ -8,7 +8,6 @@ import plotly.graph_objects as go
 from src.analytics.driver_analysis import (
     driver_summary,
     position_changes,
-    format_lap_time,
 )
 from src.analytics.team_analysis import team_summary
 from src.analytics.strategy_analysis import (
@@ -18,7 +17,7 @@ from src.analytics.strategy_analysis import (
     compound_comparison,
 )
 from src.ui.session_selector import session_selector
-from src.utils.formatters import format_lap_time as fmt_lap_time, format_duration
+from src.utils.formatting import format_lap_time, format_duration
 
 
 def render_table(frame):

@@ -1,6 +1,9 @@
 import sys
+from pathlib import Path
 
-PROJECT_ROOT = r"E:\devansh\F1-Race-Intelligence"
+# Resolve the repository root from this file so the notebooks work after the
+# project is moved to another machine or directory.
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-if PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, PROJECT_ROOT)
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))

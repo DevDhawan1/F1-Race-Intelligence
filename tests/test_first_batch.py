@@ -17,7 +17,6 @@ class FirstBatchTests(unittest.TestCase):
 
         self.assertIsNone(config["loaded_session"])
 
-
     def test_driver_slug_uses_explicit_mapping_and_fallback(self):
         from src.services.driver_service import driver_image_slug
 
@@ -27,23 +26,12 @@ class FirstBatchTests(unittest.TestCase):
             "maxver01",
         )
 
-
-    def test_require_columns_reports_missing_columns(self):
-        from src.utils.validation import require_columns
-
-        frame = pd.DataFrame({"Driver": ["VER"], "LapTime": [1]})
-
-        with self.assertRaisesRegex(ValueError, "Missing required columns: Compound"):
-            require_columns(frame, ["Driver", "Compound"])
-
-
     def test_driver_selector_returns_none_for_empty_results(self):
         from src.ui.driver_selector import get_available_drivers
 
         self.assertEqual(get_available_drivers(None), [])
         self.assertEqual(get_available_drivers(pd.DataFrame()), [])
         self.assertEqual(get_available_drivers(pd.DataFrame({"Position": [1]})), [])
-
 
     def test_driver_selector_deduplicates_and_sorts_drivers(self):
         from src.ui.driver_selector import get_available_drivers

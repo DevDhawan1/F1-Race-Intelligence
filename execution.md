@@ -247,9 +247,7 @@ src/ui/
 │   └── create_circuit_map() - matplotlib → base64 PNG
 └── components/
     ├── driver_card.py
-    ├── team_card.py
-    ├── podium_card.py
-    └── weather_card.py
+    └── driver_card.py
 ```
 
 ## Utilities
@@ -257,8 +255,7 @@ src/ui/
 ```
 src/utils/
 ├── lap_filters.py - remove_outlier_laps()
-├── formatters.py
-└── formatting.py
+└── formatting.py - format_lap_time(), format_duration()
 ```
 
 ## Cache Structure

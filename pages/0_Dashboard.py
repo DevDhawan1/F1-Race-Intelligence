@@ -6,9 +6,9 @@ import fastf1.exceptions
 
 from src.ui.session_selector import session_selector
 from src.services.driver_service import get_driver_profile
-from src.analytics.driver_analysis import format_lap_time
+from src.utils.formatting import format_lap_time
 from src.ui.circuit_map import create_circuit_map
-from src.utils.formatters import format_lap_time as fmt_lap_time, format_duration
+from src.utils.formatting import format_lap_time as fmt_lap_time, format_duration
 
 # ==========================================================
 # PAGE CONFIGURATION
